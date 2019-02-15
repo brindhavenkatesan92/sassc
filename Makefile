@@ -174,6 +174,10 @@ OBJECTS = $(SOURCES:.c=.o)
 SPEC_PATH = $(SASS_SPEC_PATH)
 all: sassc
 
+debug: CFLAGS += -g
+debug: CXXFLAGS += -g
+debug: sassc 
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -202,7 +206,7 @@ install: libsass-install-$(BUILD) \
 	$(DESTDIR)$(PREFIX)/$(SASSC_EXE)
 
 build-static: $(RESOURCES) $(OBJECTS) $(LIB_STATIC)
-	$(CC) $(LDFLAGS) -o $(SASSC_EXE) $^ $(LDLIBS)
+	$(CC) $(LDFLAGS) -o $(SASSC_EXE) $^ $(LDLIBS) 
 
 build-shared: $(RESOURCES) $(OBJECTS) $(LIB_SHARED)
 	$(CC) $(LDFLAGS) -o $(SASSC_EXE) $(RESOURCES) $(OBJECTS) \
@@ -218,14 +222,19 @@ $(LIB_SHARED): libsass-shared
 
 libsass-static:
 ifdef SASS_LIBSASS_PATH
+#compiling libsass with debug symbols
+ifeq ($(MAKECMDGOALS),debug)
+	$(MAKE) BUILD="static" -C $(SASS_LIBSASS_PATH) debug
+else
 	$(MAKE) BUILD="static" -C $(SASS_LIBSASS_PATH)
+endif
 else
 	$(error SASS_LIBSASS_PATH must be defined)
 endif
 
 libsass-shared:
 ifdef SASS_LIBSASS_PATH
-	$(MAKE) BUILD="shared" -C $(SASS_LIBSASS_PATH)
+	$(MAKE) BUILD="shared" -C $(SASS_LIBSASS_PATH) 
 else
 	$(error SASS_LIBSASS_PATH must be defined)
 endif
